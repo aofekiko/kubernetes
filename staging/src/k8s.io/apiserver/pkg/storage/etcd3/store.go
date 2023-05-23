@@ -134,15 +134,41 @@ func (s *store) Get(ctx context.Context, key string, opts storage.GetOptions, ou
 	if err != nil {
 		return err
 	}
+	klog.V(3).Infof("Recieived a GET request for %s with resourceVersion: %s and IgnoreNotFound: %b", preparedKey, opts.ResourceVersion, opts.IgnoreNotFound)
 	startTime := time.Now()
-	getResp, err := s.client.KV.Get(ctx, preparedKey)
+	resourceVersion := opts.ResourceVersion
+	klog.V(3).Infof("GET DEBUG %s ", resourceVersion)
+	var fromRV *uint64
+	if len(resourceVersion) > 0 {
+		klog.V(3).Infof("Received a GET request with a resourceVersion")
+		parsedRV, err := s.versioner.ParseResourceVersion(resourceVersion)
+		if err != nil {
+			return apierrors.NewBadRequest(fmt.Sprintf("invalid resource version: %v", err))
+		}
+		fromRV = &parsedRV
+	}
+	var returnedRV, withRev int64
+	if fromRV != nil {
+		if *fromRV > 0 {
+			returnedRV = int64(*fromRV)
+			withRev = returnedRV
+		}
+	}
+	options := make([]clientv3.OpOption, 0, 1)
+	if withRev != 0 {
+		options = append(options, clientv3.WithRev(withRev))
+	}
+	getResp, err := s.client.KV.Get(ctx, preparedKey, options...)
 	metrics.RecordEtcdRequest("get", s.groupResourceString, err, startTime)
+	if err !=nil && err.code == 11 {
+		return //return a ResourceExpired error from etcd3 package /kubernetes/staging/src/k8s.io/apiserver/pkg/storage/etcd3/errors.go
+	}
 	if err != nil {
 		return err
 	}
-	if err = s.validateMinimumResourceVersion(opts.ResourceVersion, uint64(getResp.Header.Revision)); err != nil {
-		return err
-	}
+	//if err = s.validateMinimumResourceVersion(opts.ResourceVersion, uint64(getResp.Header.Revision)); err != nil {
+	//	return err
+	//}
 
 	if len(getResp.Kvs) == 0 {
 		if opts.IgnoreNotFound {

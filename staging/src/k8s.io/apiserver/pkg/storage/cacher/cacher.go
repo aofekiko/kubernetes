@@ -668,14 +668,20 @@ func (c *Cacher) Get(ctx context.Context, key string, opts storage.GetOptions, o
 		return c.storage.Get(ctx, key, opts, objPtr)
 	}
 
-	// If resourceVersion is specified, serve it from cache.
-	// It's guaranteed that the returned value is at least that
-	// fresh as the given resourceVersion.
+	// If resourceVersion is specified, serve it from underlying
+	// storage to look for the specific resourceVersion.
 	getRV, err := c.versioner.ParseResourceVersion(opts.ResourceVersion)
 	if err != nil {
 		return err
 	}
 
+	if getRV != 0 {
+		return c.storage.Get(ctx, key, opts, objPtr)
+	}
+
+	// If resourceVersion is zero, serve it from cache.
+	// It's guaranteed that the returned value is at least that
+	// fresh as the given resourceVersion.
 	if getRV == 0 && !c.ready.check() {
 		// If Cacher is not yet initialized and we don't require any specific
 		// minimal resource version, simply forward the request to storage.
