@@ -85,8 +85,9 @@ type Builder struct {
 	limitChunks       int64
 	requestTransforms []RequestTransform
 
-	resources   []string
-	subresource string
+	resources       []string
+	subresource     string
+	resourceVersion string
 
 	namespace    string
 	allNamespace bool
@@ -567,6 +568,13 @@ func (b *Builder) TransformRequests(opts ...RequestTransform) *Builder {
 // subresource path instead of the main resource path.
 func (b *Builder) Subresource(subresource string) *Builder {
 	b.subresource = subresource
+	return b
+}
+
+// ResourceVersion instructs the builder to retrieve the object at a
+// specific version instead of the latest version.
+func (b *Builder) ResourceVersion(resourceVersion string) *Builder {
+	b.resourceVersion = resourceVersion
 	return b
 }
 
@@ -1091,11 +1099,12 @@ func (b *Builder) visitByName() *Result {
 	visitors := []Visitor{}
 	for _, name := range b.names {
 		info := &Info{
-			Client:      client,
-			Mapping:     mapping,
-			Namespace:   selectorNamespace,
-			Name:        name,
-			Subresource: b.subresource,
+			Client:          client,
+			Mapping:         mapping,
+			Namespace:       selectorNamespace,
+			Name:            name,
+			Subresource:     b.subresource,
+			ResourceVersion: b.resourceVersion,
 		}
 		visitors = append(visitors, info)
 	}

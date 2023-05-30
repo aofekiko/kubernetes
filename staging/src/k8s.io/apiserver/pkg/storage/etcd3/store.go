@@ -160,9 +160,10 @@ func (s *store) Get(ctx context.Context, key string, opts storage.GetOptions, ou
 	}
 	getResp, err := s.client.KV.Get(ctx, preparedKey, options...)
 	metrics.RecordEtcdRequest("get", s.groupResourceString, err, startTime)
-	if err !=nil && err.code == 11 {
-		return //return a ResourceExpired error from etcd3 package /kubernetes/staging/src/k8s.io/apiserver/pkg/storage/etcd3/errors.go
-	}
+	// PROBLEM: err.code undefined (type error has no field or method code)
+	//if err != nil && err.code == 11 {
+	//	return apierrors.NewResourceExpired("The resourceVersifor the provided list is too old and had already been compacted")
+	//}
 	if err != nil {
 		return err
 	}

@@ -84,6 +84,10 @@ type Info struct {
 	// this type of resource. It may not match the resource version of the object,
 	// but if set it should be equal to or newer than the resource version of the
 	// object (however the server defines resource version).
+	// PROPOSAL:
+	// Could be any number, older or equal resource versions will be used for getting a resource
+	// on a specific version
+	// Newer, older or equal resource versions will be used for watch
 	ResourceVersion string
 	// Optional, if specified, the object is the most recent value of the subresource
 	// returned by the server if available.
@@ -97,7 +101,7 @@ func (i *Info) Visit(fn VisitorFunc) error {
 
 // Get retrieves the object from the Namespace and Name fields
 func (i *Info) Get() (err error) {
-	obj, err := NewHelper(i.Client, i.Mapping).WithSubresource(i.Subresource).Get(i.Namespace, i.Name)
+	obj, err := NewHelper(i.Client, i.Mapping).WithSubresource(i.Subresource).WithResourceVersion(i.ResourceVersion).Get(i.Namespace, i.Name)
 	if err != nil {
 		if errors.IsNotFound(err) && len(i.Namespace) > 0 && i.Namespace != metav1.NamespaceDefault && i.Namespace != metav1.NamespaceAll {
 			err2 := i.Client.Get().AbsPath("api", "v1", "namespaces", i.Namespace).Do(context.TODO()).Error()
@@ -108,7 +112,7 @@ func (i *Info) Get() (err error) {
 		return err
 	}
 	i.Object = obj
-	i.ResourceVersion, _ = metadataAccessor.ResourceVersion(obj)
+	//i.ResourceVersion, _ = metadataAccessor.ResourceVersion(obj) Not needed?
 	return nil
 }
 
