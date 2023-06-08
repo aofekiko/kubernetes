@@ -339,6 +339,16 @@ message GetOptions {
   // Defaults to unset
   // +optional
   optional string resourceVersion = 1;
+
+  // resourceVersionMatch determines how resourceVersion is applied to list and get calls.
+  // It is highly recommended that resourceVersionMatch be set for list and get calls where
+  // resourceVersion is set
+  // See https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions for
+  // details.
+  //
+  // Defaults to unset
+  // +optional
+  optional string resourceVersionMatch = 10;
 }
 
 // GroupKind specifies a Group and a Kind, but does not force a version.  This is useful for identifying

@@ -144,8 +144,9 @@ func (FieldsV1) SwaggerDoc() map[string]string {
 }
 
 var map_GetOptions = map[string]string{
-	"":                "GetOptions is the standard query options to the standard REST get call.",
-	"resourceVersion": "resourceVersion sets a constraint on what resource versions a request may be served from. See https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions for details.\n\nDefaults to unset",
+	"":                     "GetOptions is the standard query options to the standard REST get call.",
+	"resourceVersion":      "resourceVersion sets a constraint on what resource versions a request may be served from. See https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions for details.\n\nDefaults to unset",
+	"resourceVersionMatch": "resourceVersionMatch determines how resourceVersion is applied to list and get calls. It is highly recommended that resourceVersionMatch be set for list and get calls where resourceVersion is set See https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions for details.\n\nDefaults to unset",
 }
 
 func (GetOptions) SwaggerDoc() map[string]string {

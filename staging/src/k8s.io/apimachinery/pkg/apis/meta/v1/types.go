@@ -461,6 +461,16 @@ type GetOptions struct {
 	// +optional
 	ResourceVersion string `json:"resourceVersion,omitempty" protobuf:"bytes,1,opt,name=resourceVersion"`
 	// +k8s:deprecated=includeUninitialized,protobuf=2
+
+	// resourceVersionMatch determines how resourceVersion is applied to list and get calls.
+	// It is highly recommended that resourceVersionMatch be set for list and get calls where
+	// resourceVersion is set
+	// See https://kubernetes.io/docs/reference/using-api/api-concepts/#resource-versions for
+	// details.
+	//
+	// Defaults to unset
+	// +optional
+	ResourceVersionMatch ResourceVersionMatch `json:"resourceVersionMatch,omitempty" protobuf:"bytes,10,opt,name=resourceVersionMatch,casttype=ResourceVersionMatch"`
 }
 
 // DeletionPropagation decides if a deletion will propagate to the dependents of

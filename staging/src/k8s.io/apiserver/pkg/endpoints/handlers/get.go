@@ -105,12 +105,18 @@ func GetResource(r rest.Getter, scope *RequestScope) http.HandlerFunc {
 					err = errors.NewBadRequest(err.Error())
 					return nil, err
 				}
+
+				if errs := metainternalversionvalidation.ValidateGetOptions(options); len(errs) > 0 {
+					err := errors.NewInvalid(schema.GroupKind{Group: metav1.GroupName, Kind: "GetOptions"}, "", errs)
+					return nil, err
+				}
 			}
 			tracing.SpanFromContext(ctx).AddEvent("About to Get from storage")
 			return r.Get(ctx, name, &options)
 		})
 }
 
+// QUESTION: What is "WithOptions"? when is it ever used?
 // GetResourceWithOptions returns a function that handles retrieving a single resource from a rest.Storage object.
 func GetResourceWithOptions(r rest.GetterWithOptions, scope *RequestScope, isSubresource bool) http.HandlerFunc {
 	return getResourceHandler(scope,

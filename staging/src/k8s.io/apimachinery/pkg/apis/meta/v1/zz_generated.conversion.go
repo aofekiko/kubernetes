@@ -352,6 +352,13 @@ func autoConvert_url_Values_To_v1_GetOptions(in *url.Values, out *GetOptions, s 
 	} else {
 		out.ResourceVersion = ""
 	}
+	if values, ok := map[string][]string(*in)["resourceVersionMatch"]; ok && len(values) > 0 {
+		if err := Convert_Slice_string_To_v1_ResourceVersionMatch(&values, &out.ResourceVersionMatch, s); err != nil {
+			return err
+		}
+	} else {
+		out.ResourceVersionMatch = ""
+	}
 	return nil
 }
 

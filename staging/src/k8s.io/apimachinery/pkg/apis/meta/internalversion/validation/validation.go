@@ -24,6 +24,23 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
+// QUESTION: Why is internalversion defined instead of using metav1?
+func ValidateGetOptions(options metav1.GetOptions) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if match := options.ResourceVersionMatch; len(match) > 0 {
+		if len(options.ResourceVersion) == 0 {
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("resourceVersionMatch"), "resourceVersionMatch is forbidden unless resourceVersion is provided"))
+		}
+		if match != metav1.ResourceVersionMatchExact && match != metav1.ResourceVersionMatchNotOlderThan {
+			allErrs = append(allErrs, field.NotSupported(field.NewPath("resourceVersionMatch"), match, []string{string(metav1.ResourceVersionMatchExact), string(metav1.ResourceVersionMatchNotOlderThan), ""}))
+		}
+		if match == metav1.ResourceVersionMatchExact && options.ResourceVersion == "0" {
+			allErrs = append(allErrs, field.Forbidden(field.NewPath("resourceVersionMatch"), "resourceVersionMatch \"exact\" is forbidden for resourceVersion \"0\""))
+		}
+	}
+	return allErrs
+}
+
 // ValidateListOptions returns all validation errors found while validating the ListOptions.
 func ValidateListOptions(options *internalversion.ListOptions, isWatchListFeatureEnabled bool) field.ErrorList {
 	if options.Watch {

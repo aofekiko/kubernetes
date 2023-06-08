@@ -248,6 +248,9 @@ type GetOptions struct {
 	// ResourceVersion. The newest available data is preferred, but any data not older than this
 	// ResourceVersion may be served.
 	ResourceVersion string
+	// ResourceVersionMatch provides the rule for how the resource version constraint applies. If set
+	// to the default value "" the legacy resource version semantic apply.
+	ResourceVersionMatch metav1.ResourceVersionMatch
 }
 
 // ListOptions provides the options that may be provided for storage list operations.
